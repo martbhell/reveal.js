@@ -66,7 +66,7 @@ We need something to from a terminal write files to object storage. We will try 
 					<section>
 
 
-						There are many clients one can use with S3. awscli comes with an s3 client inside which is working with our version for Ceph RadosGW. For some clients we have <a href="https://research.csc.fi/pouta-using-object-storage" target="_blank">rudimentary documentation</a> how to use them.
+						There are <a href="https://research.csc.fi/pouta-using-object-storage" target="_blank" ="link to our documentation for usage of some clients">many clients</a> one can use with S3. awscli comes with an s3 client inside which is working with our version for Ceph RadosGW (time of writing: Jewel).
 
 					</section>
 					<section>
@@ -93,10 +93,41 @@ $ pip install awscli # don't confuse this with "aws" in pip
 </pre>
 
 					</section>
-					<section>
+
+                                        <section>
 
 						Configuring it:
-						
+						We will use the command "aws configure" to add the ec2 credentials in a format that awscli understands. But before that 
+                                                we need to tell the awscli tool to use the signature verification implemented in Ceph RadosGW. We do that by creating and adding the following to $HOME/.aws/credentials
+
+                                        </section>
+                                        <section>
+
+(please note the strange syntax for adding the s3 = and signature_version = s3 part. Without the spaces at the beginning of the line with "    signature_version = s3" you will have a bad time:
+
+<pre><code data-noescape>
+$ mkdir $HOME/.aws
+$ touch $HOME/.aws/credentials
+$ chmod 600 $HOME/.aws/credentials
+$ chmod 700 $HOME/.aws/
+$ $EDITOR $HOME/.aws/credentials
+$ cat $HOME/.aws/credentials 
+[default]
+<mark>
+s3 =
+    signature_version = s3
+</mark>
+</code></pre>
+
+
+
+                                        </section>
+
+
+					<section>
+
+Then finally we add the credentials to the file:
+
 <pre>
 $ aws configure
 AWS Access Key ID [None]: Enteryouraccesskeyidhere
@@ -108,28 +139,47 @@ Default output format [None]: # press ENTER to get the default
 					</section>
 					<section>
 
-						In addition we need to tell the awscli tool to use the signature verification implemented in Ceph RadosGW. We do that by adding the following to $HOME/.aws/credentials
-
+						Now we should be able to use aws cli to upload files to the cPouta Object Storage!
 					</section>
 					<section>
 
-(please note the strange syntax for adding the s3 = and signature_version = s3 part. Without the spaces at the beginning of the line with "    signature_version = s3" you will have a bad time:
+						Upstream documentation about awscli can be found on <a target="_blank" href="https://aws.amazon.com/cli/">https://aws.amazon.com/cli/</a><br />
 
-<pre>
-<code data-noescape>
-$ cat $HOME/.aws/credentials 
-[default]
-aws_access_key_id=Enteryouraccesskeyidhere
-aws_secret_access_key=Enteryouraccesskeyidhere
-<mark>
-s3 =
-    signature_version = s3
-</mark>
-</code></pre>
+					Some useful commands:
+					<br /><font size="+2">
+					$ aws s3 help
+					</font><br />
+Create a new bucket:
+					<br /><font size="+2">
+$ aws s3 mb s3://mynewbucketname
+					</font>
+					</section>
+					<section>
+Show some details about an object:
+					<br /><font size="+2">
+$ aws s3 ls s3://mypresentation20180423/index.html --summarize
+<br />
+$ aws --endpoint-url https://object.pouta.csc.fi:443 s3 ls s3://mypresentation20180423/index.html --summarize
+					</font>
+					</section>
+					<section>
+Copy an object:
+					<br /><font size="+2">
+$ aws s3 cp $SOURCE $DESTINATION
+<br />
+$ aws --endpoint-url https://object.pouta.csc.fi:443 s3 cp s3://mypresentation20180423/index.html /tmp/index.html
+					</font>
+					</section>
+					<section>
 
+In Ceph RadosGW Jewel this command does unfortunately not work:
 
-						Then we can use aws cli to upload files to our Object Storage!
-
+					<br /><font size="+2">
+$ aws --endpoint-url https://object.pouta.csc.fi:443 s3 website s3://mypresentation20180423/ --index-document index.html
+					</font><br />
+					The error: "An error occurred (MethodNotAllowed) when calling the PutBucketWebsite operation: Unknown" <br />
+					Our hope is that in luminous this feature will work: <a href="http://docs.ceph.com/docs/luminous/radosgw/bucketpolicy/" target="_blank">http://docs.ceph.com/docs/luminous/radosgw/bucketpolicy/</a>
+				
 
 					</section>
 
@@ -214,9 +264,9 @@ upload: ./.gitignore to s3://mypresentation20180423/.gitignore
 				</section>
 				<section>
 
-				<h1> Step 5: Profit </h1>
+				<h1> Step 5: Profit</h1>
 
-And visit <a href="https://mypresentation20180423.object.pouta.csc.fi/demo.html" title="this presentation">https://mypresentation20180423.object.pouta.csc.fi/demo.html</a>
+And visit <a href="https://mypresentation20180423.object.pouta.csc.fi/index.html" title="this presentation">https://mypresentation20180423.object.pouta.csc.fi/index.html</a>
 
 
 				</section>
