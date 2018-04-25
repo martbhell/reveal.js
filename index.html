@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Object Storage Use Cases Part 2: Storing your reveal.js presentation in Object Storage</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/black.css">
@@ -24,8 +24,202 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section>
+					<section>
+
+						This is part of a technical series of blog post where the <a href="https://research.csc.fi/cloud-computing" target="_blank">CSC Cloud Team</a> illustrates with words and sometimes figures how to do things with our <a href="https://research.csc.fi/pouta-object-storage" target="_blank">object storage</a>.
+
+					</section>
+					
+					<section>
+					
+						Previous installation in this series was the magnicificent <a href="https://pouta.blog.csc.fi/2018/04/object-storage-use-cases-part-1-nfs.html" target="_blank">NFS + ZFS + Encryption blog post</a>
+					
+					
+					</section>
+					
+					<section>
+					In this post we'll experiment with S3, the aws tool and reveal.js to upload a presentation at a nice https://mypresentation20180423.object.pouta.csc.fi/index.html URL.
+					
+					</section>
+					
+					<section>
+					
+						At the time of writing we have not enabled any <a href="https://ceph.com/planet/hosting-a-web-site-in-radosgw/" target="_blank">automatic redirection</a> to index.html with HAProxy if there is no filename specified, so "index.html" is needed or you will see the S3 XML details about the bucket (or AccessDenied). Also https:// at the beginning is needed as we do not yet redirect from TCP 80 to TCP 443.
+
+					</section>
+				</section>
+
+
+
+				<section>
+
+					<section>
+						<h1>Step 1: Configure aws-cli</a>
+					</section>
+					<section>
+
+		
+We need something to from a terminal write files to object storage. We will try the "industry standard" awscli tool to illustrate that it does work even though we are using Ceph's RadosGW which has an s3-like implementation.
+
+					</section>
+					<section>
+
+
+						There are many clients one can use with S3. awscli comes with an s3 client inside which is working with our version for Ceph RadosGW. For some clients we have <a href="https://research.csc.fi/pouta-using-object-storage" target="_blank">rudimentary documentation</a> how to use them.
+
+					</section>
+					<section>
+
+You will need OpenStack ec2 credentials to use S3. You get those with this command:
+
+<pre>
+$ openstack ec2 credentials create
+</pre>
+
+More instructions about this can be found in <a href="https://research.csc.fi/pouta-install-client" target="_blank">our documentation</a>
+
+					</section>
+					<section>
+
+
+						Setting up a python virtual environment and install awscli inside it (so we don't mess with system libraries):
+						
+<pre>
+$ virtualenv venv_aws
+$ source venv_aws/bin/activate
+$ pip install -U setuptools # this was needed on my CentOS7 laptop
+$ pip install awscli # don't confuse this with "aws" in pip
+</pre>
+
+					</section>
+					<section>
+
+						Configuring it:
+						
+<pre>
+$ aws configure
+AWS Access Key ID [None]: Enteryouraccesskeyidhere
+AWS Secret Access Key [None]: Enteryoursecretaccesskeyhere
+Default region name [None]: # press ENTER to get the default
+Default output format [None]: # press ENTER to get the default
+</pre>
+
+					</section>
+					<section>
+
+						In addition we need to tell the awscli tool to use the signature verification implemented in Ceph RadosGW. We do that by adding the following to $HOME/.aws/credentials
+
+					</section>
+					<section>
+
+(please note the strange syntax for adding the s3 = and signature_version = s3 part. Without the spaces at the beginning of the line with "    signature_version = s3" you will have a bad time:
+
+<pre>
+<code data-noescape>
+$ cat $HOME/.aws/credentials 
+[default]
+aws_access_key_id=Enteryouraccesskeyidhere
+aws_secret_access_key=Enteryouraccesskeyidhere
+<mark>
+s3 =
+    signature_version = s3
+</mark>
+</code></pre>
+
+
+						Then we can use aws cli to upload files to our Object Storage!
+
+
+					</section>
+
+				</section>
+
+				<section>
+
+					<section>
+						<h1> Step 2: Setup a working directory with of reveal.js </h1>
+
+					</section>
+					<section>
+After the git client is installed we can clone the reveal.js github repository:
+
+<br />
+
+<pre><code>
+$ git clone https://github.com/hakimel/reveal.js.git
+$ cd reveal.js
+</code></pre>
+
+
+Now inside this directory there is a demo.html and an index.html file that one can use as a base. You could/should modify this to add your content. See some other <a href="https://github.com/hakimel/reveal.js/wiki/Example-Presentations" target="_blank">really cool stuff</a> with reveal.js to personalize your presentation :)
+
+
+					</section>
+
+
+
+				</section>
+				<section>
+					<section>
+	
+					<h1> Step 3: Create a bucket in our object storage </h1>
+					</section>
+					<section>
+
+
+						We create a bucket with an awesome name:
+						<br />
+						<font size="+2">$ aws --endpoint-url https://object.pouta.csc.fi:443 s3 mb s3://mypresentation20180423</font>
+						<br />
+
+
+After the above command one can point a browser to <a href="https://mypresentation20180423.object.pouta.csc.fi" title="opens in a new tab" target="_blank">https://mypresentation20180423.object.pouta.csc.fi</a> and it will give an AccessDenied error because the bucket is not public.
+
+
+At the time of writing <a href="https://github.com/aws/aws-cli/issues/1270" target="_blank" title="according to this github issue">it seems</a> one has to specify an --endpoint-url when using aws.
+					</section>
+				</section>
+				<section>
+
+					<section>
+						<h1> Step 4: Upload objects to object storage </h1>
+
+					</section>
+					<section>
+
+						We sync the contents of our directory with the content in the bucket (except .git/* )and set a public ACL on all the objects. The bucket itself is still private.
+						
+						This is the same command you would run if you want to update the slides:
+
+						<br />
+						<font size="+2">
+						$ aws --endpoint-url https://object.pouta.csc.fi:443 s3 sync . s3://mypresentation20180423 --acl public-read --exclude '.git/*'
+						</font>
+						<br />
+
+The truncated output of the command is:
+<pre>
+upload: ./Gruntfile.js to s3://mypresentation20180423/Gruntfile.js
+upload: css/print/paper.css to s3://mypresentation20180423/css/print/paper.css
+upload: ./README.md to s3://mypresentation20180423/README.md      
+upload: ./.gitignore to s3://mypresentation20180423/.gitignore    
+......
+</pre>
+
+					</section>
+
+
+
+				</section>
+				<section>
+
+				<h1> Step 5: Profit </h1>
+
+And visit <a href="https://mypresentation20180423.object.pouta.csc.fi/demo.html" title="this presentation">https://mypresentation20180423.object.pouta.csc.fi/demo.html</a>
+
+
+				</section>
 			</div>
 		</div>
 
