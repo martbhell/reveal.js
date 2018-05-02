@@ -51,19 +51,19 @@ Press **→** one or more times to select topic.
 					
 					<section>
 					
-						Previous installation in this series was the magnicificent <a href="https://pouta.blog.csc.fi/2018/04/object-storage-use-cases-part-1-nfs.html" target="_blank">NFS + ZFS + Encryption blog post</a>
+						The previous installation in this series was the magnificent <a href="https://pouta.blog.csc.fi/2018/04/object-storage-use-cases-part-1-nfs.html" target="_blank">NFS + ZFS + Encryption blog post</a>
 					
 					
 					</section>
 					
 					<section>
-						In this post we'll experiment with S3, the <a href="https://aws.amazon.com/cli/" target="_blank">aws tool</a> and reveal.js to upload a presentation at a nice https://mypresentation20180423.object.pouta.csc.fi/index.html URL.
+						Topic for this post: We will experiment with Pouta Object Storage, the <a href="https://aws.amazon.com/cli/" target="_blank">aws tool</a> and reveal.js to upload a presentation at a nice https://mypresentation20180423.object.pouta.csc.fi/index.html URL.
 					
 					</section>
 					
 					<section>
 					
-						At the time of writing we have not enabled any <a href="https://ceph.com/planet/hosting-a-web-site-in-radosgw/" target="_blank">automatic redirection</a> to index.html with HAProxy if there is no filename specified, so "index.html" is needed or you will see the S3 XML details about the bucket (or AccessDenied). Also https:// at the beginning is needed as we do not yet redirect from TCP 80 to TCP 443.
+						At the time of writing, we have not enabled any <a href="https://ceph.com/planet/hosting-a-web-site-in-radosgw/" target="_blank">automatic redirection</a> to index.html with HAProxy if there is no filename specified, so "index.html" is needed or you will see the S3 XML details about the bucket (or AccessDenied). Also https:// at the beginning is needed as we do not yet redirect from TCP 80 to TCP 443.
 
 					</section>
 				</section>
@@ -220,7 +220,7 @@ $ cd reveal.js
 </code></pre>
 
 
-Now inside this directory there is a demo.html and an index.html file that one can use as a base. You could/should modify this to add your content. See some other <a href="https://github.com/hakimel/reveal.js/wiki/Example-Presentations" target="_blank">really cool stuff</a> with reveal.js to personalize your presentation :)
+Inside this directory there is a demo.html and an index.html file that one can use as a base. You could/should modify this to add your content. See some other <a href="https://github.com/hakimel/reveal.js/wiki/Example-Presentations" target="_blank">really cool stuff</a> with reveal.js to personalize your presentation :)
 
 
 					</section>
@@ -242,7 +242,7 @@ Now inside this directory there is a demo.html and an index.html file that one c
 						<br />
 
 
-After the above command one can point a browser to <a href="https://mypresentation20180423.object.pouta.csc.fi" title="opens in a new tab" target="_blank">https://mypresentation20180423.object.pouta.csc.fi</a> and it will give an AccessDenied error because the bucket is not public.
+After the above command one can point a browser to <a href="https://mypresentation20180423.object.pouta.csc.fi" title="opens in a new tab" target="_blank">https://mypresentation20180423.object.pouta.csc.fi</a> and it will give an AccessDenied error because the bucket is not public. This is OK, we don't need the bucket to be public. We can mark individual objects in the bucket as public.
 
 
 At the time of writing <a href="https://github.com/aws/aws-cli/issues/1270" target="_blank" title="according to this github issue">it seems</a> one has to specify an --endpoint-url when using aws.
