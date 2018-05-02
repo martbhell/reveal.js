@@ -57,7 +57,7 @@ Press **→** one or more times to select topic.
 					</section>
 					
 					<section>
-						Topic for this post: We will experiment with Pouta Object Storage, the <a href="https://aws.amazon.com/cli/" target="_blank">aws tool</a> and reveal.js to upload a presentation at a nice https://mypresentation20180423.object.pouta.csc.fi/index.html URL.
+						Topic for this post: <br />We will experiment with Pouta Object Storage, the <a href="https://aws.amazon.com/cli/" target="_blank">aws tool</a> and reveal.js to upload a presentation at a nice https://mypresentation20180423.object.pouta.csc.fi/index.html URL.
 					
 					</section>
 					
@@ -238,14 +238,20 @@ Inside this directory there is a demo.html and an index.html file that one can u
 
 						We create a bucket with an awesome name:
 						<br />
-						<font size="+2">$ aws --endpoint-url https://object.pouta.csc.fi:443 s3 mb s3://mypresentation20180423</font>
+						<font size="+2">$ <font color="green"><b>aws</b></font> --endpoint-url https://object.pouta.csc.fi:443 <font color="green"><b>s3 mb s3://mypresentation20180423</b></font></font>
 						<br />
 
 
-After the above command one can point a browser to <a href="https://mypresentation20180423.object.pouta.csc.fi" title="opens in a new tab" target="_blank">https://mypresentation20180423.object.pouta.csc.fi</a> and it will give an AccessDenied error because the bucket is not public. This is OK, we don't need the bucket to be public. We can mark individual objects in the bucket as public.
+						After the above command one can point a browser to <a href="https://mypresentation20180423.object.pouta.csc.fi" title="opens in a new tab" target="_blank">https://mypresentation20180423.object.pouta.csc.fi</a> ... 
 
+					</section>
+					<section>
+						... and it will give an <font color="red">AccessDenied</font> error because the bucket is not public. <br />
+						This is OK. We don't need the whole bucket public. <br />
+						In our upload commands we set the objects as public.<br />
 
-At the time of writing <a href="https://github.com/aws/aws-cli/issues/1270" target="_blank" title="according to this github issue">it seems</a> one has to specify an --endpoint-url when using aws.
+						<br />
+						Also note that at the time of writing <a href="https://github.com/aws/aws-cli/issues/1270" target="_blank" title="according to this github issue">one has to</a> specify an --endpoint-url when using aws.
 					</section>
 				</section>
 				<section>
