@@ -44,7 +44,7 @@ Press **→** one or more times to select topic.
 						Invisible Maintenance<br />with ExaBGP<br /> <font size="+2">FUNET Technical Days 2018 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
 					</section>
 					<section>
-						This is part of a technical series of blog post where the <a href="https://research.csc.fi/cloud-computing" target="_blank">CSC Pouta Cloud Team</a> illustrates with words and sometimes figures how to do things with our <a href="https://research.csc.fi/pouta-object-storage" target="_blank">object storage</a>.
+						Credits to FUNET, CSC Cloud and Network Team
 
 					</section>
 					
@@ -67,6 +67,15 @@ curl https://cats.object.pouta.csc.fi/cat.jpg
 </pre>
 
 If it's a picture you get the picture.
+					</section>
+					<section>
+						<a href="https://research.csc.fi/pouta-object-storage" target="_blank">https://research.csc.fi/pouta-object-storage</a> <br />:
+						"Object storage is a cloud storage service, where you can store and retrieve data over HTTPS. This is not tied to any individual virtual machines. The data can be made accessible from anywhere, inside and outside cPouta. For those familiar with commercial cloud services, the Amazon S3 is an example of an object storage service."
+					</section>
+				</section>
+				<section>
+					<section>
+						<h1> traffic flow </h1>
 					</section>
 					<section>
 						curl https://exabgp.object.pouta.csc.fi/index.html > <br />
@@ -97,8 +106,8 @@ If it's a picture you get the picture.
 						<img src="exabgp_traffic_diagram.png">
 					</section>
 					<section>
-						The client gets an IP. <br />
-						The IP is bound to a normal Ethernet interface in a Linux Virtual Machine. < br />
+						Client resolves the DNS into an IP. <br />
+						The IP is bound to a normal Ethernet interface in a Linux Virtual Machine.
 					</section>
 
 
@@ -106,11 +115,12 @@ If it's a picture you get the picture.
 				<section>
 					<section>
 	
-					<h1> More details </h1>
+					<h1> Why change?</h1>
 					</section>
 					<section>
 
-						Deets
+						DNS round robin decent for load balancing <br />
+						But for failover & High Availability this was found lacking.
 
 					</section>
 				</section>
@@ -131,7 +141,7 @@ No changes to haproxy / radosgw at all?
 					</section>
 
 					<section>
-						<img src="exabgp_openstack.png">
+						<img src="exabgp_traffic_diagram_after.png">
 					</section>
 
 					<section>
@@ -161,8 +171,8 @@ No changes to haproxy / radosgw at all?
 					The info from the healthcheck during normal operation on node1 looks like:
 
 <pre>
-announce route 10.1.2.2/32 next-hop 192.168.2.2 med 120
-announce route 10.1.2.3/32 next-hop 192.168.2.2 med 130
+announce route 86.50.254.0/32 next-hop 193.x.y.z med 120
+announce route 86.50.254.1/32 next-hop 193.x.y.z med 130
 </pre>
 					</section>
 					<section>
@@ -170,8 +180,8 @@ announce route 10.1.2.3/32 next-hop 192.168.2.2 med 130
 					On node2 it’s almost the same except that the MED values (cost for the route, lower is more preferred) are reversed:
 
 <pre>
-announce route 10.1.2.2/32 next-hop 192.168.2.3 med 130
-announce route 10.1.2.3/32 next-hop 192.168.2.3 med 120
+announce route 86.50.254.0/32 next-hop 193.x.y.a med 130
+announce route 86.50.254.1/32 next-hop 193.x.y.a med 120
 </pre>
 					</section>
 					<section>
@@ -181,13 +191,24 @@ announce route 10.1.2.3/32 next-hop 192.168.2.3 med 120
 
 					When we have disabled the node (this is in ExaBGP’s built-in healthcheck.py done by touching a file):
 <pre>
-announce route 10.1.2.2/32 next-hop 192.168.2.3 med 2200 community [ 65535:0 ]
-announce route 10.1.2.3/32 next-hop 192.168.2.3 med 2210 community [ 65535:0 ]
+announce route 86.50.254.0/32 next-hop 193.x.y.a med 2200 community [ 65535:0 ]
+announce route 86.50.254.1/32 next-hop 193.x.y.a med 2210 community [ 65535:0 ]
 </pre>
 					</section>
 
 					<section>
 						<h1> Health Check details </h1>
+					</section>
+
+					<section>
+						ExaBGP 3.4 is the current recommended version. 
+
+						We use the built-in healthcheck.py of ExaBGP. This is a python script which checks if the CEPH http daemon (civetweb) responds to a curl GET request and depending on a good or bad result writes different announce lines to stdout.
+					</section>
+					<section>
+
+						It’s possible to easily disable a node in ExaBGP by touching a file. Because we wanted to send a community ( we use the well-known “BGP Graceful Shutdown” community 65535:0 ) with the announcement when we disable a node we made some changes to the healthcheck.py script with pull requests to ExaBGP
+
 					</section>
 
 				</section>
@@ -204,9 +225,46 @@ announce route 10.1.2.3/32 next-hop 192.168.2.3 med 2210 community [ 65535:0 ]
 				<section>
 				<h1> Graph during maintenance </h1>
 				Graphs / Process
+				</section>
+
+				<section>
+					<section>
+					<h1> end scene</h1>
+					</section>
+					<section>
+						No changes or restart of the service were needed.
+					</section>
+					<section>
+					
+					We use puppet to configure our object servers. This code is unfortunately not (yet) public. If anybody wants more details about how it is done with puppet please get in touch. In summary we:
+					</section>
+					<section>
+
+	Add a dummy interface with the service IPs. <br />
+	Use modprobe config to load the dummy kernel module AND runs "/sbin/ip link add fake0 type dummy" on boot <br />
+	A network-scripts/ifcfg-fake0 (we run CentOS7) with several IP addresses and /32 netmasks <br />
+	We used fake0 instead of dummy0 because of puppet facts ordering issues <br />
+	Setup a python virtualenv where we install exabgp <br />
+	Add a systemd that runs exabgp from within this virtualenv <br />
+					</section>
+
+					<section>
+
+					We add the IP on the dummy interface because that is networking best practice :)
+					
+					The IP addresses are not used in the machine’s local routing table. So “ip route” does not have them and on CentOS 7 if you run tcpdump you need to use it on the normal interface, like "$ tcpdump -i eth0 ‘host 86.50.254.0’"
+					</section>
+					<section>
+
+					 * magic invisibility maintenance caveat: Some clients don’t like when a connection suddenly changes from talking with one server to another. We have done a bit of testing and have seen that python-swiftclient (v3.5.0) reads get an ECONNRESET error. Uploads or writes however retry and works . The aws-cli works fine for both writes and reads.
+					 </section>
+				</section>
 				
 				<section>
 				<h1> Links and blogs </h1>
+
+				<a href="https://pouta.blog.csc.fi/2018/03/customer-invisible-maintenance-of-csc.html" target="_blank">https://pouta.blog.csc.fi/</a> <br />
+				<a href="https://research.csc.fi/pouta-object-storage" target="_blank">https://research.csc.fi/pouta-object-storage</a>
 				</section>
 				
 				<section>

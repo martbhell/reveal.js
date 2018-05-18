@@ -1,1 +1,1 @@
-This is a set of slides to introduce how to store a set of slides on a Ceph Object Storage S3 using reveal.js and awscli
+This is a set of slides to present how CSC Pouta Cloud Team uses ExaBGP for some extra HA of their object storage.
