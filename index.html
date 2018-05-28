@@ -44,14 +44,14 @@ Press **→** one or more times to select topic.
 						Invisible Maintenance<br />with ExaBGP<br /> <font size="+2">FUNET Technical Days 2018 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
 					</section>
 					<section>
-						Credits to FUNET, CSC Cloud and Network Team
+						Credits to FUNET, CSC Storage, Cloud and Network Teams
 
 					</section>
 					
 				</section>
 				<section>
 					<section>
-						<h1>What is Pouta?</a>
+						<h1>What is Pouta?</h1>
 
 						Infrastructure as a Service <br />
 
@@ -220,18 +220,61 @@ announce route 86.50.254.1/32 next-hop 193.x.y.a med 2210 community [ 65535:0 ]
 
 				</section>
 				<section>
+					<section>
 				<h1> Maintenance Procedure</h1>
 
 				<br /> - Remove the IP from the DNS entry of object.pouta.csc.fi
 				<br /> - Wait until there are no transfers anymore to this IP.
 				<br /> - Do the maintenance
 				<br /> - Add the IP back to DNS
+					</section>
+
+					<section>
+
+						<b>1)</b> Normal operation. (object.pouta.csc.fi has both service IPs and there are ongoing transfers to one service IP per node)
+						<br />
+						<br />
+						<b>2)</b> From object.pouta.csc.fi we remove the preferred service IP of the node we want to do maintenance on
+						<br />
+						<br />
+						<b>3)</b> Now we wait until all transfers are gone. "ss -tln -o state established|grep $service_ip". This can take time.
+					</section>
+					<section>
+						<b>4)</b> $ disable-exabgp # this makes any new clients using stale DNS / caching to get routed to the node we are not maintaining.
+						<br />
+						<br />
+						<b>5)</b> We are in "failed-over mode" - both IPs are in one node and it would serve requests to both, only one is in DNS though.
+					</section>
+					<section>
+						<b>6)</b> We can reboot the node and exabgp would still be disabled (as the disabled file remains)
+						<br />
+						<br />
+						<b>7)</b> Maintenance is done
+						<br />
+						<br />
+						<b>8)</b> $ enable-exabgp 
+						<br />
+						<br />
+						<b>9)</b> Add the IP back to the object.pouta.csc.fi DNS record. After $TTL new transfers should again go to both IPs.
+						<br />
+						<br />
+						<b>10)</b> Normal Operation.
+					</section>
+					<section>
+
+						disable-exabgp: <br />
+						checks if service_ip is in DNS and if there are any established connections to the service_ip <br />
+						if not: touch /etc/exabgp/disable
+
+					</section>
+					<section>
+						enable-exabgp: <br />
+						rm /etc/exabgp/disable
+					</section>
 
 				</section>
 				
-				<section>
-				<h1> Graph during maintenance </h1>
-				Graphs / Process
+				<section data-background="exabgp_graph.png" data-background-size="contain">
 				</section>
 
 				<section>
@@ -272,6 +315,7 @@ announce route 86.50.254.1/32 next-hop 193.x.y.a med 2210 community [ 65535:0 ]
 
 				<a href="https://pouta.blog.csc.fi/2018/03/customer-invisible-maintenance-of-csc.html" target="_blank">https://pouta.blog.csc.fi/</a> <br />
 				<a href="https://research.csc.fi/pouta-object-storage" target="_blank">https://research.csc.fi/pouta-object-storage</a>
+				<a href="https://exabgp.object.pouta.csc.fi/index.html" target="_blank">https://exabgp.object.pouta.csc.fi/index.html</a> - these slides
 				</section>
 				
 				<section>
