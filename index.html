@@ -41,10 +41,10 @@ Press **→** one or more times to select topic.
 
 					</section>
 					<section data-background="topic_background.png" data-background-size="contain">
-						<br />Customer Invisible Maintenance<br />with ExaBGP and <br /> Object Storage <br /> <font size="+2">FUNET Technical Days 2018 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
+						<br />Customer Invisible Maintenance<br />with ExaBGP and <br /> Object Storage <br /> <font size="+2">Funet Technical Days 2018 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
 					</section>
 					<section>
-						Credits to FUNET, CSC Storage, Cloud and Network Teams
+						Credits to Funet, CSC Storage, Cloud and Network Teams
 
 					</section>
 					<section>
@@ -82,15 +82,15 @@ Press **→** one or more times to select topic.
 					</section>
 					<section>
 
-<pre>
-curl -qs https://exabgp.object.pouta.csc.fi/index.html|head
-</pre>						
+<pre><code data-trim data-noescape class="bash">
+$ curl -qs https://exabgp.object.pouta.csc.fi/index.html|head
+</code></pre>
 
 You get some HTML back. 
 
-<pre>
-curl https://cats.object.pouta.csc.fi/cat.jpg
-</pre>
+<pre><code data-trim data-noescape class="bash">
+$ curl https://cats.object.pouta.csc.fi/cat.jpg
+</code></pre>
 
 If it's a picture you get the picture.
 					</section>
@@ -179,7 +179,7 @@ No changes to haproxy / radosgw at all?
 					<section>
 						<a href="https://github.com/Exa-Networks/exabgp">https://github.com/Exa-Networks/exabgp</a>
 						<p align="left">
-						<br /> - Recommended by CSC network team & FUNET
+						<br /> - Recommended by CSC network team & Funet
 						<br /> - low resource footprint and small number of software dependencies
 						<br /> - it is not a full routing suite
 						<br /> - Python - which we as Openstack operators are familiar with
@@ -196,19 +196,19 @@ No changes to haproxy / radosgw at all?
 
 					The info from the healthcheck during normal operation on node1 looks like:
 
-<pre>
+<pre><code data-trim data-noescape>
 announce route 86.50.254.0/32 next-hop 193.x.y.z med 120
 announce route 86.50.254.1/32 next-hop 193.x.y.z med 130
-</pre>
+</code></pre>
 					</section>
 					<section>
 
 					On node2 it’s almost the same except that the MED values (cost for the route, lower is more preferred) are reversed:
 
-<pre>
-announce route 86.50.254.0/32 next-hop 193.x.y.a med 130
-announce route 86.50.254.1/32 next-hop 193.x.y.a med 120
-</pre>
+<pre><code data-trim data-noescape>
+announce route 86.50.254.0/32 next-hop 193.x.y.<mark>a</mark> med 130
+announce route 86.50.254.1/32 next-hop 193.x.y.<mark>a</mark> med 120
+</code></pre>
 					</section>
 					<section>
 
@@ -216,10 +216,10 @@ announce route 86.50.254.1/32 next-hop 193.x.y.a med 120
 
 
 					When we have disabled the node (this is in ExaBGP’s built-in healthcheck.py done by touching a file):
-<pre>
+<pre><code data-trim data-noescape>
 announce route 86.50.254.0/32 next-hop 193.x.y.a med 2200 community [ 65535:0 ]
 announce route 86.50.254.1/32 next-hop 193.x.y.a med 2210 community [ 65535:0 ]
-</pre>
+</code></pre>
 					</section>
 
 					<section>
@@ -293,7 +293,7 @@ announce route 86.50.254.1/32 next-hop 193.x.y.a med 2210 community [ 65535:0 ]
 
 				</section>
 				
-				<section data-background="exabgp_graph.png" data-background-size="contain">
+				<section data-background="new_grafana.png" data-background-size="contain">
 				</section>
 
 				<section>
