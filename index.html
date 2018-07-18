@@ -41,17 +41,45 @@ Press **→** one or more times to select topic.
 
 					</section>
 					<section data-background="topic_background.png" data-background-size="contain">
-						<br />Customer Invisible Maintenance<br />with ExaBGP and <br /> Object Storage <br /> <font size="+2">Funet Technical Days 2018 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
+						<br />Hunt for Red PCI Ghosts in OpenStack<br />with SQL <br /> <font size="+2">2018 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
 					</section>
 					<section>
 						Credits to Chris & Oscar for motivation and ideas :)
 
 					</section>
 					<section>
-						Any particular part of this SQL that does not make sense? Nothing? Goto END
+						<a href="https://github.com/CSCfi/puppet-opsviewagent/pull/43"> https://github.com/CSCfi/puppet-opsviewagent/pull/43</a> <br />
+						Any particular part of this SQL that does not make sense? Nothing? Goto END<br />
+
+						# Prints instances from nova.pci_devices table that have a different amount of pci devices than their flavors <br />
+						# Assumes that column value for flavors with pci_aliases are colon separated like M10:1 or P100:4 <br />
 					</section>
 					<section>
-						Whole SQL
+
+<code>
+SELECT my_uuids
+FROM
+(
+  SELECT
+    pcid.instance_uuid as my_uuids,
+    count(pcid.instance_uuid) as actual_gpus,
+    SUBSTRING_INDEX(flex.value, ':', -1) as flavor_gpus
+  FROM
+    nova.pci_devices pcid,
+    nova.instances inst,
+    nova_api.flavor_extra_specs flex
+  WHERE
+    pcid.status = "allocated" AND
+    inst.uuid = pcid.instance_uuid AND
+    inst.instance_type_id = flex.flavor_id AND
+    flex.`key` LIKE "%alias"
+  GROUP BY
+    pcid.instance_uuid
+  HAVING
+    actual_gpus != flavor_gpus
+)
+AS T
+</code>
 					</section>
 					
 				</section>
@@ -61,6 +89,7 @@ Press **→** one or more times to select topic.
 						First step
 					</section>
 					<section>
+						use nova;
 						select * from pci_devices;
 					</section>
 				
