@@ -49,10 +49,7 @@ Press **→** one or more times to select topic.
 					</section>
 					<section>
 						<a href="https://github.com/CSCfi/puppet-opsviewagent/pull/43"> https://github.com/CSCfi/puppet-opsviewagent/pull/43</a> <br />
-						Any particular part of this SQL that does not make sense? Nothing? Goto END<br />
-
-						# Prints instances from nova.pci_devices table that have a different amount of pci devices than their flavors <br />
-						# Assumes that column value for flavors with pci_aliases are colon separated like M10:1 or P100:4 <br />
+						Any particular part of the next SQL that does not make sense? Nothing? Goto END<br />
 					</section>
 					<section>
 
@@ -82,7 +79,10 @@ FROM
 AS T
 						</code></pre></font>
 					</section>
-					
+					<section>
+						# Prints instances from nova.pci_devices table that have a different amount of pci devices than their flavors <br />
+						# Assumes that column value for flavors with pci_aliases are colon separated like M10:1 or P100:4 <br />
+					</section>	
 				</section>
 				
 				<section>
