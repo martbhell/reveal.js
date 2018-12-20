@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>Object Storage + ExaBGP: Customer Invisible Maintenance</title>
+		<title>Yubikeys & You</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/black.css">
@@ -41,62 +41,69 @@ Press **→** one or more times to select topic.
 
 					</section>
 					<section data-background="topic_background.png" data-background-size="contain">
-						<br />Hunt for Red PCI Ghosts in OpenStack<br />with SQL <br /> <font size="+2">2018 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
+						<br />Yubikeys for<br />SSH keys <br /> <font size="+2">2018 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
 					</section>
 					<section>
-						Credits to Chris & Oscar for motivation and ideas :)
+						Credits to CSC Pouta Team, Kalle and Uppsala Uppmax HPC Team
 
 					</section>
 					<section>
-						<a href="https://github.com/CSCfi/puppet-opsviewagent/pull/43"> https://github.com/CSCfi/puppet-opsviewagent/pull/43</a> <br />
-						Any particular part of the next SQL that does not make sense? Nothing? Goto END<br />
+						Documentation: <br />
+						<a href="http://www.9bitwizard.eu/yubikey-ibikey-letsallbikey"> http://www.9bitwizard.eu/yubikey-ibikey-letsallbikey </a> <br />
+						For using it with Ubuntu<br />
+
+						<a href="https://wiki.csc.fi/CloudComputing/YubiKey"> Internal CSC Wiki CloudComputing Yubikeys </a> <br />
+					</section>
+					<section data-background="yubi_plugged.JPG" data-background-size="contain">
+					</section>
+					<section data-background="yubi_out.JPG" data-background-size="contain">
 					</section>
 					<section>
 
-						<font size="+3"><pre>
-<code class="SQL">
-SELECT my_uuids
-FROM
-(
-  SELECT
-    pcid.instance_uuid as my_uuids,
-    count(pcid.instance_uuid) as actual_gpus,
-    SUBSTRING_INDEX(flex.value, ':', -1) as flavor_gpus
-  FROM
-    nova.pci_devices pcid,
-    nova.instances inst,
-    nova_api.flavor_extra_specs flex
-  WHERE
-    pcid.status = "allocated" AND
-    inst.uuid = pcid.instance_uuid AND
-    inst.instance_type_id = flex.flavor_id AND
-    flex.`key` LIKE "%alias"
-  GROUP BY
-    pcid.instance_uuid
-  HAVING
-    actual_gpus != flavor_gpus
-)
-AS T
-						</code></pre></font>
+<ol>
+  <li>get a yubikey</li>
+  <li>install some software (opensc, yubico-piv-tool)</li>
+  <li> run some yubico-piv-tool commands to:</li>
+  <ol>
+    <li>set PIN (max 8 chars, not only numbers) & PUK (super long)</li>
+    <li>generate a private key <i>which cannot leave the yubikey </i></li>
+    <li>make a certificate</li>
+    <li>export public key</li>
+  </ol>
+  <li>ssh-add -s /usr/lib64/opensc-pkcs11.so</li>
+  <li>ssh-keygen -D /usr/lib64/opensc-pkcs11.so -e</li>
+  <li>ssh myuser@server.example.com</li>
+</ol>
+
 					</section>
 					<section>
-						# Prints instances from nova.pci_devices table that have a different amount of pci devices than their flavors <br />
-						# Assumes that column value for flavors with pci_aliases are colon separated like M10:1 or P100:4 <br />
-					</section>	
+						<h3>yubikey4: </h3>
+						Secure Static Passwords, Yubico OTP, OATH – HOTP (Event), OATH – TOTP (Time), Smart Card (PIV-Compatible), OpenPGP, FIDO U2F <br /><br />
+						<h3>yubikey5 (released 2018) </h3>
+						Also FIDO2, NFC
+					</section>
+					<section>
+						Random thoughts: <br /> <br />
+
+Best would be to get one when starting at CSC. No need to remember all the places where the key needs to manually be placed (hello central ssh key management). <br /><br />
+
+One can also use yubikey for other things (two factor auth to login to <a href="https://support.yubico.com/support/solutions/articles/15000006469-using-your-yubikey-with-github">github</a> for example) <br /> <br />
+					</section>
+					<section>
+
+smartcard , challenge-reponse, static long password, one-time passwords, gnome-keyring, PGP<br /> <br />
+
+Only RSA 2048 in the "PIV" slot in the Yubikey 4. It supports 4096 RSA PGP keys.  <br /><br />
+
+Needs a USB slot, One USB 3.0 hub from Fujitech tried - did not work. <br /><br />
+
+Store PIN & PUK somewhere. <br /><br />
+
+Owned by CSC or by the employee? <br /><br />
+
+					</section>
 				</section>
 				
-				<section>
-					<section>
-						First step
-					</section>
-					<section>
-						use nova;
-						select * from pci_devices;
-					</section>
-				
-				</section>
-				
-
 			</div>
 		</div>
 
