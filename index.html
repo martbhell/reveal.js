@@ -24,7 +24,6 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>
 					<section>
 						This slideset is made using <a href="https://github.com/hakimel/reveal.js/" target="_blank">reveal.js</a>.
 <br />
@@ -49,24 +48,27 @@ Press **→** one or more times to select topic.
 
 					</section>
 					<section>
-						Documentation: https://docs.openstack.org/placement/latest/ <br />
-						List of changes: https://docs.openstack.org/nova/rocky/user/placement.html <br />
+						Documentation: <a href="https://docs.openstack.org/placement/latest/">Latest docs</a> <br />
+						List of changes: <a href="https://docs.openstack.org/nova/rocky/user/placement.html">Rocky Nova User Placement</a> <br />
 						For newton: ??? <br />
 						For ocata: ? <br />
+						<a href="https://docs.openstack.org/ocata/install-guide-ubuntu/nova-controller-install.html">Deployment Guide</a> for Nova Ubuntu was useful (had example of endpoint) <br />
 
 					</section>
 					<section>
-						https://www.openstack.org/videos/summits/vancouver-2018/placement-present-and-future-in-nova-and-beyond<br />
+						<a href="https://www.openstack.org/videos/summits/vancouver-2018/placement-present-and-future-in-nova-and-beyond">placement present future in nova and beyond </a><br />
 						<a href="https://www.youtube.com/watch?v=LVkknWuGq_I&feature=youtu.be&list=PL0vkr2Qkh9oM6-avm8kqlk0eEhk2x7zhI&t=1595">Video about what is happening in Newton and Ocata</a><br />
 
 					</section>
 					<section>
-						In Newton: nova-compute talk to placement and update their resource providers there. <br />
-						In Ocata: nova-scheduler will use old method until all nova-computes are ocata. Not anymore in Pike<br/>
-						In Ocata: nova-compute will not start without [placement]<br />
+						In <b>Newton: nova-compute </b> talk to placement and update their resource providers there. <br />
+						In <b>Ocata: nova-scheduler </b> will use old method until all nova-computes are ocata. Not anymore in Pike<br/>
+						In <b>Ocata: nova-compute </b> will not start without [placement]<br />
 					</section>
 					<section>
-						same as last slide but with a picture? TODO
+						ROCKY <br>
+						<a href="https://docs.openstack.org/nova/rocky/user/architecture.html"> rocky nova architecture has a diagram</a>
+						<img height=auto src="https://docs.openstack.org/nova/rocky/_images/architecture.svg">
 					</section>
 					<section>
 						openstack-nova-placement-api.rpm </br>
@@ -76,58 +78,109 @@ Press **→** one or more times to select topic.
 						nova.conf [placement] <br />
 					</section>
 					<section>
+						<section>
 						placement requires admin credentials <br />
 						pip install osc-placement <br />
 						openstack resource provider list <br />
+						|<br>
+						|<br>
+						V<br>
+						</section>
+						<section>
+							<pre>
+| uuid                                 | name                   | generation |
++--------------------------------------+------------------------+------------+
+| bb30e381-UUID-4749-b439-Q | n2.cloud.example.org        |          1 |
+| 8b225ecb-UUID-471c-b099-Q | n3.cloud.example.org        |          1 |
+| e5a3d46d-UUID-43ce-9ceb-Q | foo.cloud.example.org 	  |          1 |
+| a996fb27-UUID-45ee-b98c-Q | foo3.cloud.example.org      |         17 |
+| 0003354d-UUID-4604-ba36-Q | foo5.cloud.example.org      |         11 |
+| 4911d9f6-UUID-471e-b779-Q | q.cloud.example.org         |          1 |
++--------------------------------------+------------------------+------------+
+							</pre>
+						</section>
+						<section>
+<pre>
+openstack resource provider inventory list 0003354d-UUID-4604-ba36-TAITOP2 -f table -c resource_class -c allocation_ratio -c max_unit -c reserved -c step_size -c total
++----------------+------------------+----------+----------+-----------+--------+
+| resource_class | allocation_ratio | max_unit | reserved | step_size |  total |
++----------------+------------------+----------+----------+-----------+--------+
+| VCPU           |             16.0 |       48 |        0 |         1 |     48 |
+| MEMORY_MB      |              1.0 |   130946 |      512 |         1 | 130946 |
+| DISK_GB        |              1.0 |      855 |        0 |         1 |    855 |
++----------------+------------------+----------+----------+-----------+--------+
+</pre>
+						</section>
+						<section>
+							<pre>
+$ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C  -f table -c resource_class -c allocation_ratio -c max_unit -c reserved -c step_size -c total 
++----------------+------------------+----------+----------+-----------+---------+
+| resource_class | allocation_ratio | max_unit | reserved | step_size |   total |
++----------------+------------------+----------+----------+-----------+---------+
+| VCPU           |             16.0 |       40 |        0 |         1 |      40 |
+| MEMORY_MB      |              1.0 |   522949 |    44000 |         1 |  522949 |
+| DISK_GB        |              1.0 |  2656144 |        0 |         1 | 2656144 |
++----------------+------------------+----------+----------+-----------+---------+
+</pre>
+</section>
 					</section>
 					<section>
 						<a href="https://docs.openstack.org/releasenotes/nova/ocata.html">Ocata and Nova</a> <br />
 						You can safely remove the AggregateCoreFilter, AggregateRamFilter, and AggregateDiskFilter from your [filter_scheduler]enabled_filters and you do not need to replace them with any other core/ram/disk filters. The placement query in the FilterScheduler takes care of the core/ram/disk filtering, so CoreFilter, RamFilter, and DiskFilter are redundant. <br />	
+						<br />
+						We don't use DiskFilter but we have RamFilter and AggregateCoreFilter
 					</section>
 					<section>
-						Pike<br /> 
-						- Nova FilterScheduler now requests allocation candidates during scheduling.<br />
-						- <a href="https://docs.openstack.org/releasenotes/nova/pike.html">Some bugs fixed around live migration and evacuate to specific hosts</a><br />
-					</section>
-					<section>
-						pike <br />
-						- an allocation request is still made and if it fails migration/evacuate fails. <br />
-						- benefits when using multiple schedulers <br />
-						- traits are added<br />
-					</section>
-					<section>
+						Post Ocata Thoughts 
+						<section>
+							Pike<br /> 
+							- Nova FilterScheduler now requests allocation candidates during scheduling.<br />
+							- <a href="https://docs.openstack.org/releasenotes/nova/pike.html">Some bugs fixed around live migration and evacuate to specific hosts</a><br />
+							- an allocation request is still made and if it fails migration/evacuate fails. <br />
+						|<br>
+						|<br>
+						V<br>
+						</section>
+						<section>
+							pike <br />
+							- benefits when using multiple schedulers <br />
+							- traits are added<br />
+						</section>
+						<section>
 
-						Queens  <br>
-						  - placement must be upgraded before nova-scheduler<br/>
-						  - <a title="found that it came from rocky by grepping openstack/nova git repo" href="https://docs.openstack.org/placement/latest/configuration/config.html">placement.conf setting introduced in queens</a><br />
-						 If False, allocation candidates are returned in a deterministic but undefined order. That is, all things being equal, two requests for allocation candidates will return the same results in the same order; but no guarantees are made as to how that order is determined.<br />
-						 - Added a required (traits) to the GET allocation_candidates <br />
-					 </section>
-					 <section>
-						 Queens <br>
-						 - Traits extra specs are added to flavours like: <br />
-						 trait:HW_CPU_X86_AVX2=required<br />
-						 trait:STORAGE_DISK_SSD=required<br />
-						 - [schedulers]/max_placement_results defaults to 1000 <br /> 
-					 </section>
-					 <section>
-						 rocky <br>
+							<h4>Queens </h4> <br>
+							  - placement must be upgraded before nova-scheduler<br/>
+							  - <a title="found that it came from queens by grepping openstack/nova git repo" href="https://docs.openstack.org/placement/latest/configuration/config.html">placement.conf setting introduced in queens</a><br />
+							 If False, allocation candidates are returned in a deterministic but undefined order. That is, all things being equal, two requests for allocation candidates will return the same results in the same order; but no guarantees are made as to how that order is determined.<br />
+							 - Added a required (traits) to the GET allocation_candidates <br />
+						 </section>
+						 <section>
+							 Queens <br>
+							 - Traits extra specs are added to flavours like: <br />
+							 trait:HW_CPU_X86_AVX2=required<br />
+							 trait:STORAGE_DISK_SSD=required<br />
+							 - [schedulers]/max_placement_results defaults to 1000 <br /> 
+						 </section>
+						 <section>
+							 <h4>rocky </h4><br>
 
-						 - CachingScheduler issues - it gets deprecated </br>
-						 - placement support for rbac
-						 - has "member_of" - only return resource providers that are part of an aggregate
-						 - nova-api now deletes resource providers when updating instances, nova-computes and mirror nova aggregates <br />
-						 - can now configure a [placement_database] <br />
-						 - changing this and running "nova-manage api_db sync" will create tables but won't sync any data <br />
-						 - up to each deployment to do this? <br />
-					 </section>
-					 <section>
-						 rocky <br>
-						 - nova now supports reporting cpu traits of libvirt guests to placement <br />
-						 - nova scheduler can now use placement for better query with tenant-restricted aggregatse. Requires a new setting <br />
-					 </section>
-					 <section>
-						Stein/Train - extracted <br />
+							 - CachingScheduler issues - it gets deprecated <br>
+							 - placement support for rbac<br/>
+							 - has "member_of" - only return resource providers that are part of an aggregate<br />
+							 - nova-api now deletes resource providers when updating instances, nova-computes and mirror nova aggregates <br />
+							 - can now configure a [placement_database] <br />
+							 - changing this and running "nova-manage api_db sync" will create tables but won't sync any data <br />
+							 - up to each deployment to do this? <br />
+						 </section>
+						 <section>
+							 <h4>rocky </h4><br>
+							 - nova now supports reporting cpu traits of libvirt guests to placement <br />
+							 - nova scheduler can now use placement for better query with tenant-restricted aggregatse. Requires a new setting <br />
+						 </section>
+						 <section>
+							 <h4>Stein/Train </h4> <br>
+							 - extracted <br />
+						</section>
 					</section>
 					<section>
 						Things: <br />
@@ -138,8 +191,15 @@ Press **→** one or more times to select topic.
 					</section>
 					<section>
 						If a compute gets a new UUID == admin work to remove resource? <br />
+						Logs are in /var/log/httpd/placement* <br />
 					</section>
-				</section>
+					<section>
+						<code>
+Over capacity for DISK_GB on resource provider UUIDHEREPLZTAITOP2NODE. Needed: 80, Used: 800, Capacity: 855.0
+						</code>
+						<br><br>
+						Newton already has a disk_allocation_ratio one can set in nova.conf
+					</section>
 				
 			</div>
 		</div>
