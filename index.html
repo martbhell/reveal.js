@@ -191,7 +191,9 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 					</section>
 					<section>
 						If a compute gets a new UUID == admin work to remove resource? <br />
-						Logs are in /var/log/httpd/placement* <br />
+						Logs are in <br>
+						 - /var/log/httpd/placement* <br />
+						 - /var/log/nova/nova-placement* <br />
 					</section>
 					<section>
 						<section>
@@ -208,6 +210,13 @@ Over capacity for DISK_GB on resource provider UUIDHEREPLZTAITOP2NODE. Needed: 8
 <code>
 Allocation for DISK_GB on resource provider fa6a0aa3-UUID-4da0-a895-IO/TB/broadwell violates min_unit, max_unit, or step_size. Requested: 1730, min_unit: 1, max_unit: 1687, step_size: 1
 </code>
+						</section>
+						<section>
+							<a href="https://bugs.launchpad.net/nova/+bug/1672041">violate inventory constarints</a><br>
+<code>
+InvalidAllocationConstraintsViolated: Unable to create allocation for 'DISK_GB' on resource provider '0bb7777c-UUID-4616-8890-IO/TB/broadwell'. The requested amount would violate inventory constraints.
+</code>
+
 						</section>
 					</section>
 				
