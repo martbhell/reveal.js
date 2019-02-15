@@ -41,76 +41,103 @@ Press **→** one or more times to select topic.
 
 					</section>
 					<section data-background="topic_background.png" data-background-size="contain">
-						<br />Yubikeys for<br />SSH keys <br /> <font size="+2">2019 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
+						<br />Placement <br /> <font size="+2">2019 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
 					</section>
 					<section>
-						Credits to CSC Pouta Team, Kalle and Uppsala Uppmax HPC Team
-
-					</section>
-					<section>
-						Documentation: <br />
-						<a href="http://www.9bitwizard.eu/yubikey-ibikey-letsallbikey"> http://www.9bitwizard.eu/yubikey-ibikey-letsallbikey </a> <br />
-						For using it with Ubuntu<br />
-
-						<a href="https://wiki.csc.fi/CloudComputing/YubiKey"> Internal CSC Wiki CloudComputing Yubikeys </a> <br />
-					</section>
-					<section data-background="yubi_plugged.JPG" data-background-size="contain">
-					</section>
-					<section data-background="yubi_out.JPG" data-background-size="contain">
-					</section>
-					<section>
-
-<ol>
-  <li>get a yubikey</li>
-  <li>install some software (opensc, yubico-piv-tool)</li>
-  <li> run some yubico-piv-tool commands to:</li>
-  <ol>
-    <li>set PIN (max 8 chars, not only numbers) & PUK (super long)</li>
-    <li>generate a private key <i>which cannot leave the yubikey </i></li>
-    <li>make a certificate</li>
-    <li>export public key</li>
-  </ol>
-  <li>ssh-add -s /usr/lib64/opensc-pkcs11.so</li>
-  <li>ssh-keygen -D /usr/lib64/opensc-pkcs11.so -e</li>
-  <li>ssh myuser@server.example.com</li>
-</ol>
+						Credits to CSC Pouta Team & Boris in openstack-operator channel<br />
+						and various placement videos :)
 
 					</section>
 					<section>
-						<h3>yubikey4: </h3>
-						Secure Static Passwords, Yubico OTP, OATH – HOTP (Event), OATH – TOTP (Time), Smart Card (PIV-Compatible), OpenPGP, FIDO U2F <br /><br />
-						<h3>yubikey5 (released 2018) </h3>
-						Also FIDO2, NFC
+						Documentation: https://docs.openstack.org/placement/latest/ <br />
+						List of changes: https://docs.openstack.org/nova/rocky/user/placement.html <br />
+						For newton: ??? <br />
+						For ocata: ? <br />
+
 					</section>
 					<section>
-						<b>Random thoughts 1/2:</b> <br /> <br />
+						https://www.openstack.org/videos/summits/vancouver-2018/placement-present-and-future-in-nova-and-beyond<br />
+						<a href="https://www.youtube.com/watch?v=LVkknWuGq_I&feature=youtu.be&list=PL0vkr2Qkh9oM6-avm8kqlk0eEhk2x7zhI&t=1595">Video about what is happening in Newton and Ocata</a><br />
 
-Best would be to get one when starting at CSC. No need to remember all the places where the key needs to manually be placed (hello central ssh key management). Who owns the device?<br /><br />
-
-One can also use yubikey for other things (two factor auth to login to <a href="https://support.yubico.com/support/solutions/articles/15000006469-using-your-yubikey-with-github">github</a> for example) <br /> <br />
+					</section>
+					<section>
+						In Newton: nova-compute talk to placement and update their resource providers there. <br />
+						In Ocata: nova-scheduler will use old method until all nova-computes are ocata. Not anymore in Pike<br/>
+						In Ocata: nova-compute will not start without [placement]<br />
+					</section>
+					<section>
+						same as last slide but with a picture? TODO
+					</section>
+					<section>
+						openstack-nova-placement-api.rpm </br>
+						WSGI setup<br />
+						openstack admin user <br/>
+						service catalog and endpoints <br />
+						nova.conf [placement] <br />
+					</section>
+					<section>
+						placement requires admin credentials <br />
+						pip install osc-placement <br />
+						openstack resource provider list <br />
+					</section>
+					<section>
+						<a href="https://docs.openstack.org/releasenotes/nova/ocata.html">Ocata and Nova</a> <br />
+						You can safely remove the AggregateCoreFilter, AggregateRamFilter, and AggregateDiskFilter from your [filter_scheduler]enabled_filters and you do not need to replace them with any other core/ram/disk filters. The placement query in the FilterScheduler takes care of the core/ram/disk filtering, so CoreFilter, RamFilter, and DiskFilter are redundant. <br />	
+					</section>
+					<section>
+						Pike<br /> 
+						- Nova FilterScheduler now requests allocation candidates during scheduling.<br />
+						- <a href="https://docs.openstack.org/releasenotes/nova/pike.html">Some bugs fixed around live migration and evacuate to specific hosts</a><br />
+					</section>
+					<section>
+						pike <br />
+						- an allocation request is still made and if it fails migration/evacuate fails. <br />
+						- benefits when using multiple schedulers <br />
+						- traits are added<br />
 					</section>
 					<section>
 
-						<b>Random thoughts 2/2:</b> <br /> <br />
-smartcard , challenge-reponse, static long password, one-time passwords, gnome-keyring, PGP<br /> <br />
+						Queens  <br>
+						  - placement must be upgraded before nova-scheduler<br/>
+						  - <a title="found that it came from rocky by grepping openstack/nova git repo" href="https://docs.openstack.org/placement/latest/configuration/config.html">placement.conf setting introduced in queens</a><br />
+						 If False, allocation candidates are returned in a deterministic but undefined order. That is, all things being equal, two requests for allocation candidates will return the same results in the same order; but no guarantees are made as to how that order is determined.<br />
+						 - Added a required (traits) to the GET allocation_candidates <br />
+					 </section>
+					 <section>
+						 Queens <br>
+						 - Traits extra specs are added to flavours like: <br />
+						 trait:HW_CPU_X86_AVX2=required<br />
+						 trait:STORAGE_DISK_SSD=required<br />
+						 - [schedulers]/max_placement_results defaults to 1000 <br /> 
+					 </section>
+					 <section>
+						 rocky <br>
 
-Only RSA 2048 in the "PIV" slot in the Yubikey 4. It supports 4096 RSA PGP keys.  <br /><br />
-
-Needs a USB slot, One USB 3.0 hub from Fujitech tried - did not work. <br /><br />
-
-Store PIN & PUK somewhere.
+						 - CachingScheduler issues - it gets deprecated </br>
+						 - placement support for rbac
+						 - has "member_of" - only return resource providers that are part of an aggregate
+						 - nova-api now deletes resource providers when updating instances, nova-computes and mirror nova aggregates <br />
+						 - can now configure a [placement_database] <br />
+						 - changing this and running "nova-manage api_db sync" will create tables but won't sync any data <br />
+						 - up to each deployment to do this? <br />
+					 </section>
+					 <section>
+						 rocky <br>
+						 - nova now supports reporting cpu traits of libvirt guests to placement <br />
+						 - nova scheduler can now use placement for better query with tenant-restricted aggregatse. Requires a new setting <br />
+					 </section>
+					 <section>
+						Stein/Train - extracted <br />
 					</section>
 					<section>
-						<b>Random thoughts 3/3:</b> <br /> <br />
-						Could not add key back to agent after reinserting:<br />
-						<pre>$ ssh-add -s pkcs11
-Enter passphrase for PKCS#11: 
-Could not add card "pkcs11": agent refused operation
-						</pre>
-.. Try taking out and and in again a few times.<br /><br />
-
-Also maybe these can help: Setup udev rules to remove from agent when physically removed?<br />
-"ssh-add -L; "ssh-add -D; lsusb". For MacOS maybe google "USB not working after sleep mode"
+						Things: <br />
+						resource providers <br />
+						inventory <br/>
+						allocations <br />
+						Custom resource classes are specific to a deployment and represent types of quantitative resources that are not interoperable between OpenStack clouds.
+					</section>
+					<section>
+						If a compute gets a new UUID == admin work to remove resource? <br />
 					</section>
 				</section>
 				
