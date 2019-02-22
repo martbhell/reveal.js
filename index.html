@@ -45,25 +45,26 @@ Press **→** one or more times to select topic.
 					<section>
 						Credits to CSC Pouta Team & Boris in openstack-operator channel<br />
 						and various placement videos :)
-
 					</section>
 					<section>
 						Documentation: <a href="https://docs.openstack.org/placement/latest/">Latest docs</a> <br />
 						List of changes: <a href="https://docs.openstack.org/nova/rocky/user/placement.html">Rocky Nova User Placement</a> <br />
 						For newton: ??? <br />
-						For ocata: ? <br />
+						For ocata:
 						<a href="https://docs.openstack.org/ocata/install-guide-ubuntu/nova-controller-install.html">Deployment Guide</a> for Nova Ubuntu was useful (had example of endpoint) <br />
 
 					</section>
 					<section>
+						<h2> Vid(eoand)yous:<h2/> <br />
 						<a href="https://www.openstack.org/videos/summits/vancouver-2018/placement-present-and-future-in-nova-and-beyond">placement present future in nova and beyond </a><br />
 						<a href="https://www.youtube.com/watch?v=LVkknWuGq_I&feature=youtu.be&list=PL0vkr2Qkh9oM6-avm8kqlk0eEhk2x7zhI&t=1595">Video about what is happening in Newton and Ocata</a><br />
 
 					</section>
 					<section>
-						In <b>Newton: nova-compute </b> talk to placement and update their resource providers there. <br />
-						In <b>Ocata: nova-scheduler </b> will use old method until all nova-computes are ocata. Not anymore in Pike<br/>
-						In <b>Ocata: nova-compute </b> will not start without [placement]<br />
+						In <b style=color:green>Newton: nova-scheduler </b></font> nova/scheduler/filter_scheduler.py does not contain 'placement'<br />
+						In <b style=color:green>Newton: nova-compute </b></font> talk to placement and update their resource providers there. <br />
+						In <b style=color:green>Ocata: nova-scheduler </b> will use old method until all nova-computes are ocata. <i>(Not anymore in Pike)</i><br/>
+						In <b style=color:green>Ocata: nova-compute </b> will not start without [placement]<br />
 					</section>
 					<section>
 						ROCKY <br>
@@ -79,6 +80,7 @@ Press **→** one or more times to select topic.
 					</section>
 					<section>
 						<section>
+							<h2> list resource providers with openstack client </h2>
 						placement requires admin credentials <br />
 						pip install osc-placement <br />
 						openstack resource provider list <br />
@@ -129,11 +131,13 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 						You can safely remove the AggregateCoreFilter, AggregateRamFilter, and AggregateDiskFilter from your [filter_scheduler]enabled_filters and you do not need to replace them with any other core/ram/disk filters. The placement query in the FilterScheduler takes care of the core/ram/disk filtering, so CoreFilter, RamFilter, and DiskFilter are redundant. <br />	
 						<br />
 						We don't use DiskFilter but we have RamFilter and AggregateCoreFilter
+						<br />
+						Nova aggregate metadata does not propagate into placement resource providers in Ocata.
 					</section>
 					<section>
 						Post Ocata Thoughts 
 						<section>
-							Pike<br /> 
+							<h3>Pike</h3>
 							- Nova FilterScheduler now requests allocation candidates during scheduling.<br />
 							- <a href="https://docs.openstack.org/releasenotes/nova/pike.html">Some bugs fixed around live migration and evacuate to specific hosts</a><br />
 							- an allocation request is still made and if it fails migration/evacuate fails. <br />
@@ -142,13 +146,13 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 						V<br>
 						</section>
 						<section>
-							pike <br />
+							<h3>pike</h3>
 							- benefits when using multiple schedulers <br />
 							- traits are added<br />
 						</section>
 						<section>
 
-							<h4>Queens </h4> <br>
+							<h4>Queens </h4>
 							  - placement must be upgraded before nova-scheduler<br/>
 							  - <a title="found that it came from queens by grepping openstack/nova git repo" href="https://docs.openstack.org/placement/latest/configuration/config.html">placement.conf setting introduced in queens</a><br />
 							 If False, allocation candidates are returned in a deterministic but undefined order. That is, all things being equal, two requests for allocation candidates will return the same results in the same order; but no guarantees are made as to how that order is determined.<br />
@@ -162,8 +166,7 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 							 - [schedulers]/max_placement_results defaults to 1000 <br /> 
 						 </section>
 						 <section>
-							 <h4>rocky </h4><br>
-
+							 <h4>rocky </h4>
 							 - CachingScheduler issues - it gets deprecated <br>
 							 - placement support for rbac<br/>
 							 - has "member_of" - only return resource providers that are part of an aggregate<br />
@@ -173,25 +176,27 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 							 - up to each deployment to do this? <br />
 						 </section>
 						 <section>
-							 <h4>rocky </h4><br>
+							 <h4>rocky </h4>
 							 - nova now supports reporting cpu traits of libvirt guests to placement <br />
 							 - nova scheduler can now use placement for better query with tenant-restricted aggregatse. Requires a new setting <br />
+							 - randomize_allocation_candidates introduced <br>
 						 </section>
 						 <section>
-							 <h4>Stein/Train </h4> <br>
+							 <h4>Stein/Train </h4>
 							 - extracted <br />
 						</section>
 					</section>
 					<section>
-						Things: <br />
+						<h4>Placement Things: </h4>
 						resource providers <br />
 						inventory <br/>
 						allocations <br />
-						Custom resource classes are specific to a deployment and represent types of quantitative resources that are not interoperable between OpenStack clouds.
+						<b style=color:green>"Custom resource classes</b> are specific to a deployment and represent types of quantitative resources that are not interoperable between OpenStack clouds.<br />
+						aggregates <br /> - 
 					</section>
 					<section>
 						If a compute gets a new UUID == admin work to remove resource? <br />
-						Logs are in <br>
+						Logs are in: <br>
 						 - /var/log/httpd/placement* <br />
 						 - /var/log/nova/nova-placement* <br />
 						 logs aren't populated until there's been a request to the API (== logs are on node withe VIP)
@@ -201,6 +206,7 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 							errors seen
 						</section>
 						<section>
+							<h4> Over Capacity </h4>
 						<code>
 Over capacity for DISK_GB on resource provider UUIDHEREPLZTAITOP2NODE. Needed: 80, Used: 800, Capacity: 855.0
 						</code>
@@ -208,9 +214,16 @@ Over capacity for DISK_GB on resource provider UUIDHEREPLZTAITOP2NODE. Needed: 8
 						Newton already has a disk_allocation_ratio one can set in nova.conf
 						</section>
 						<section>
+							<h4> Violate Inventory Constraint </h4>
 <code>
 Allocation for DISK_GB on resource provider fa6a0aa3-UUID-4da0-a895-IO/TB/broadwell violates min_unit, max_unit, or step_size. Requested: 1730, min_unit: 1, max_unit: 1687, step_size: 1
 </code>
+						<br><br>
+						Fix flavour?<br />
+
+						</section>
+						<section>
+							Thin Provisioning is done with LVM. No need to zero out disks (source Kalle :)
 						</section>
 						<section>
 							<a href="https://bugs.launchpad.net/nova/+bug/1672041">violate inventory constarints</a><br>
