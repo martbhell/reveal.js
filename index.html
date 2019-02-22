@@ -47,18 +47,36 @@ Press **→** one or more times to select topic.
 						and various placement videos :)
 					</section>
 					<section>
-						Documentation: <a href="https://docs.openstack.org/placement/latest/">Latest docs</a> <br />
-						List of changes: <a href="https://docs.openstack.org/nova/rocky/user/placement.html">Rocky Nova User Placement</a> <br />
-						For newton: ??? <br />
-						For ocata:
-						<a href="https://docs.openstack.org/ocata/install-guide-ubuntu/nova-controller-install.html">Deployment Guide</a> for Nova Ubuntu was useful (had example of endpoint) <br />
+						<ul>
+							<li>JIRA task about adding it: <a href="https://jira.csc.fi/browse/CCCP-2598">CCCP-2598</a></li>
+							<li>JIRA task about making some changes afterwards: <a href="https://jira.csc.fi/browse/CCCP-2605">CCCP-2605</a></li>
+							<li>JIRA task about fixing some errors: <a href="https://jira.csc.fi/browse/CCCP-2611">CCCP-2611</a></li>
+						</ul>
+						<br><br>
+						These slides: <h4><a href="https://cakeplacement.object.pouta.csc.fi/index.html">https://cakeplacement.object.pouta.csc.fi/index.html</a></h4>
+					</section>
+					<section>
+						<ul>
+							<li>Documentation: <a href="https://docs.openstack.org/placement/latest/">Latest docs</a> </li>
+							<li>List of changes: <a href="https://docs.openstack.org/nova/rocky/user/placement.html">Rocky Nova User Placement</a> </li>
+							<li>For newton: ??? </li>
+							<li>For ocata:
+							<a href="https://docs.openstack.org/ocata/install-guide-ubuntu/nova-controller-install.html">Deployment Guide</a> for Nova Ubuntu was useful (had example of endpoint) </li>
+
+							<li>	<a href="http://github.com/openstack/nova">github for openstack/nova</a></li>
+							<li><a href="https://github.com/openstack/placement">openstack/placement</a> after extraction</li>
 
 					</section>
 					<section>
 						<h2> Vid(eoand)yous:<h2/> <br />
-						<a href="https://www.openstack.org/videos/summits/vancouver-2018/placement-present-and-future-in-nova-and-beyond">placement present future in nova and beyond </a><br />
-						<a href="https://www.youtube.com/watch?v=LVkknWuGq_I&feature=youtu.be&list=PL0vkr2Qkh9oM6-avm8kqlk0eEhk2x7zhI&t=1595">Video about what is happening in Newton and Ocata</a><br />
+						1: <a href="https://www.openstack.org/videos/summits/vancouver-2018/placement-present-and-future-in-nova-and-beyond">placement present future in nova and beyond </a><br />
+						2: <a href="https://www.youtube.com/watch?v=LVkknWuGq_I&feature=youtu.be&list=PL0vkr2Qkh9oM6-avm8kqlk0eEhk2x7zhI&t=1595">Video about what is happening in Newton and Ocata</a><br />
 
+					</section>
+					<section>
+						Two things:<br/>
+						<h4>Placement and its API</h4>
+						<h4>Nova's Resource Tracker</h4>
 					</section>
 					<section>
 						In <b style=color:green>Newton: nova-scheduler </b></font> nova/scheduler/filter_scheduler.py does not contain 'placement'<br />
@@ -72,25 +90,29 @@ Press **→** one or more times to select topic.
 						<img height=auto src="https://docs.openstack.org/nova/rocky/_images/architecture.svg">
 					</section>
 					<section>
+						<h4>Things puppet does now</h4>
 						openstack-nova-placement-api.rpm </br>
 						WSGI setup<br />
 						openstack admin user <br/>
 						service catalog and endpoints <br />
-						nova.conf [placement] <br />
+						nova.conf [placement] (both API & compute)<br />
+						<i>(cpu,ram_disk)_allocation_ratios in nova.conf</i><br />
 					</section>
 					<section>
 						<section>
-							<h2> list resource providers with openstack client </h2>
-						placement requires admin credentials <br />
-						pip install osc-placement <br />
-						openstack resource provider list <br />
+							<h4> openstack resource provider list</h4>
+								placement requires admin credentials<br>
+								<code>
+						$ pip install osc-placement 
+					</code>
+						<br />
 						|<br>
 						|<br>
 						V<br>
 						</section>
 						<section>
 							<pre>
-| uuid                                 | name                   | generation |
+| uuid (same as in compute_nodes table in nova)| name           | generation |
 +--------------------------------------+------------------------+------------+
 | bb30e381-UUID-4749-b439-Q | n2.cloud.example.org        |          1 |
 | 8b225ecb-UUID-471c-b099-Q | n3.cloud.example.org        |          1 |
@@ -100,6 +122,9 @@ Press **→** one or more times to select topic.
 | 4911d9f6-UUID-471e-b779-Q | q.cloud.example.org         |          1 |
 +--------------------------------------+------------------------+------------+
 							</pre>
+						</section>
+						<section>
+							Can you see something interesting with the numbers in the following tables where we list inventory of two resource providers?
 						</section>
 						<section>
 <pre>
@@ -137,7 +162,8 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 					<section>
 						Post Ocata Thoughts 
 						<section>
-							<h3>Pike</h3>
+							<br>
+							<h3>Pike 1/2</h3>
 							- Nova FilterScheduler now requests allocation candidates during scheduling.<br />
 							- <a href="https://docs.openstack.org/releasenotes/nova/pike.html">Some bugs fixed around live migration and evacuate to specific hosts</a><br />
 							- an allocation request is still made and if it fails migration/evacuate fails. <br />
@@ -146,56 +172,71 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 						V<br>
 						</section>
 						<section>
-							<h3>pike</h3>
+							<br>
+							<h3>pike 2/2</h3>
 							- benefits when using multiple schedulers <br />
 							- traits are added<br />
 						</section>
 						<section>
-
-							<h4>Queens </h4>
-							  - placement must be upgraded before nova-scheduler<br/>
-							  - <a title="found that it came from queens by grepping openstack/nova git repo" href="https://docs.openstack.org/placement/latest/configuration/config.html">placement.conf setting introduced in queens</a><br />
+							<br>
+							<h4>Queens 1/2</h4>
+							- placement must be upgraded before nova-scheduler<br/><br>
+							  - <a title="found that it came from queens by grepping openstack/nova git repo" href="https://docs.openstack.org/placement/latest/configuration/config.html">placement.conf randomize_allocation_candidates introduced in queens</a><br />
 							 If False, allocation candidates are returned in a deterministic but undefined order. That is, all things being equal, two requests for allocation candidates will return the same results in the same order; but no guarantees are made as to how that order is determined.<br />
-							 - Added a required (traits) to the GET allocation_candidates <br />
 						 </section>
 						 <section>
-							 Queens <br>
-							 - Traits extra specs are added to flavours like: <br />
-							 trait:HW_CPU_X86_AVX2=required<br />
-							 trait:STORAGE_DISK_SSD=required<br />
-							 - [schedulers]/max_placement_results defaults to 1000 <br /> 
+							 <br>
+							 <h4>Queens 2/2</h4>
+							 <ul>
+								 <li> Added a required (traits) to the GET allocation_candidates </li>
+								 <li> Traits extra specs can be added to flavours like: </li>
+								 <code>
+							 trait:HW_CPU_X86_AVX2=required
+							 trait:STORAGE_DISK_SSD=required
+						 </code>
+						 <li> [schedulers]/max_placement_results defaults to 1000 </li> 
+						 </ul>
 						 </section>
 						 <section>
-							 <h4>rocky </h4>
-							 - CachingScheduler issues - it gets deprecated <br>
-							 - placement support for rbac<br/>
-							 - has "member_of" - only return resource providers that are part of an aggregate<br />
-							 - nova-api now deletes resource providers when updating instances, nova-computes and mirror nova aggregates <br />
-							 - can now configure a [placement_database] <br />
-							 - changing this and running "nova-manage api_db sync" will create tables but won't sync any data <br />
-							 - up to each deployment to do this? <br />
+							 <br>
+							 <h4>rocky 1/2</h4>
+							 <ul>
+								 <li> placement support for rbac</li>
+								 <li> has "member_of" - only return resource providers that are part of an aggregate</li>
+								 <li> nova-api now deletes resource providers when updating instances, nova-computes and mirror nova aggregates </li>
+								 <li> can now configure a [placement_database] </li>
+								 <li> changing this and running "nova-manage api_db sync" will create tables but won't sync any data </li>
+								 <li> up to each deployment to do this? </li>
+						 </ul>
 						 </section>
 						 <section>
-							 <h4>rocky </h4>
-							 - nova now supports reporting cpu traits of libvirt guests to placement <br />
-							 - nova scheduler can now use placement for better query with tenant-restricted aggregatse. Requires a new setting <br />
-							 - randomize_allocation_candidates introduced <br>
+							 <h4>rocky 2/2 </h4>
+							 <ul>
+							 <li>nova now supports reporting cpu traits of libvirt guests to placement </li>
+							 <li>nova scheduler can now use placement for better query with tenant-restricted aggregatse. Requires a new setting </li>
+						 </ul>
 						 </section>
 						 <section>
 							 <h4>Stein/Train </h4>
-							 - extracted <br />
+							 <ul>
+							 <li>- extracted:</li>
+							 <li>so own RPM, own database, openstack/placement and own openstack/puppet-placement</li>
+						 </ul>
 						</section>
 					</section>
 					<section>
 						<h4>Placement Things: </h4>
-						resource providers <br />
-						inventory <br/>
-						allocations <br />
-						<b style=color:green>"Custom resource classes</b> are specific to a deployment and represent types of quantitative resources that are not interoperable between OpenStack clouds.<br />
-						aggregates <br /> - 
+						<ul>
+							<li>resource providers </li>
+							<li>inventory </li>
+							<li>allocations </li>
+							<li><b style=color:green>"Custom resource classes</b> are specific to a deployment and represent types of quantitative resources that are not interoperable between OpenStack clouds.</li>
+							<li>aggregates </li> 
+						</ul>
 					</section>
 					<section>
-						If a compute gets a new UUID == admin work to remove resource? <br />
+						If a compute gets a new UUID == admin work to remove resource provider. <a href="https://developer.openstack.org/api-ref/placement/" title="api-ref/placement">Can't have duplicate names </a><br />
+						If a compute gets reinstalled - no extra work needed, will keep using compute node's UUID from compute_nodes nova table in placement<br />
 						<h4> logs </h4>
 						<ul>
 							<li> /var/log/httpd/placement* </li>
@@ -236,11 +277,11 @@ Over capacity for DISK_GB on resource provider UUIDHEREPLZTAITOP2NODE. Needed: 8
 							Thin Provisioning is done with LVM. No need to zero out disks (source Kalle :)
 						</section>
 						<section>
-							<a href="https://blueprints.launchpad.net/nova/+spec/placement-mirror-host-aggregates">blueprint placement-mirror-host-aggregates</a><br><br>
-							To get extra specs (like _allocation_ratios) from nova aggregates into resource providers<br>
-							What about the other metadata/properties we have set in nova aggregates?<br>
-							<a href="https://review.openstack.org/#/c/544683/5">1</a> and <a href="https://review.openstack.org/#/c/552105/">2</a> There is also in future possible to set initial allocation_ratios..
+							What should we do about these issues with the IO/TB/broadwell TB.3.480RAM?
 						</section>
+					</section>
+					<section>
+						FIN
 					</section>
 				
 			</div>
