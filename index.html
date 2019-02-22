@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>Placement & You</title>
+		<title>Is Placement a Replacement?</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/black.css">
@@ -196,44 +196,49 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 					</section>
 					<section>
 						If a compute gets a new UUID == admin work to remove resource? <br />
-						Logs are in: <br>
-						 - /var/log/httpd/placement* <br />
-						 - /var/log/nova/nova-placement* <br />
+						<h4> logs </h4>
+						<ul>
+							<li> /var/log/httpd/placement* </li>
+							<li> /var/log/nova/nova-placement* </li>
+							<li> /var/log/nova/nova-compute* </li>
+						</ul> <br />
 						 logs aren't populated until there's been a request to the API (== logs are on node withe VIP)
 					</section>
 					<section>
 						<section>
-							errors seen
+							<h2>errors seen</h2>
+							|<br />
+							|<br />
+							|<br />
+							V<br />
 						</section>
 						<section>
 							<h4> Over Capacity </h4>
-						<code>
 Over capacity for DISK_GB on resource provider UUIDHEREPLZTAITOP2NODE. Needed: 80, Used: 800, Capacity: 855.0
-						</code>
 						<br><br>
-						Newton already has a disk_allocation_ratio one can set in nova.conf
+						Over capacity for DISK_GB on resource provider UUIDHEREPLZCPOUTAIO. Needed: <b style=color:green>720</b>, Used: <b style=color:green>1440</b>, Capacity: <b style=color:red>2133.0</b>
+						<br />
+						<br />
+						Set disk_allocation_ratio in nova.
 						</section>
 						<section>
 							<h4> Violate Inventory Constraint </h4>
-<code>
-Allocation for DISK_GB on resource provider fa6a0aa3-UUID-4da0-a895-IO/TB/broadwell violates min_unit, max_unit, or step_size. Requested: 1730, min_unit: 1, max_unit: 1687, step_size: 1
-</code>
+							Allocation for DISK_GB on resource provider fa6a0aa3-UUID-4da0-a895-IO/TB/broadwell violates min_unit, max_unit, or step_size. Requested: <b style=color:red>1730</b>, min_unit: 1, max_unit: <b style=color:green>1687</b>, step_size: 1
 						<br><br>
 						Fix flavour?<br />
 
 						</section>
 						<section>
-							Thin Provisioning is done with LVM. No need to zero out disks (source Kalle :)
+							<a href="https://bugs.launchpad.net/nova/+bug/1681658">violate inventory constraints</a> openstack bugfix won'tfix<br><br>
+							InvalidAllocationConstraintsViolated: Unable to create allocation for 'DISK_GB' on resource provider '0bb7777c-UUID-4616-8890-IO/TB/broadwell'. <b style=color:red>The requested amount would violate inventory constraints.</b>
 						</section>
 						<section>
-							<a href="https://bugs.launchpad.net/nova/+bug/1672041">violate inventory constarints</a><br>
-<code>
-InvalidAllocationConstraintsViolated: Unable to create allocation for 'DISK_GB' on resource provider '0bb7777c-UUID-4616-8890-IO/TB/broadwell'. The requested amount would violate inventory constraints.
-</code>
+							Thin Provisioning is done with LVM. No need to zero out disks (source Kalle :)
 						</section>
 						<section>
 							<a href="https://blueprints.launchpad.net/nova/+spec/placement-mirror-host-aggregates">blueprint placement-mirror-host-aggregates</a><br><br>
 							To get extra specs (like _allocation_ratios) from nova aggregates into resource providers<br>
+							What about the other metadata/properties we have set in nova aggregates?<br>
 							<a href="https://review.openstack.org/#/c/544683/5">1</a> and <a href="https://review.openstack.org/#/c/552105/">2</a> There is also in future possible to set initial allocation_ratios..
 						</section>
 					</section>
