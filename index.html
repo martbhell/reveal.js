@@ -277,6 +277,28 @@ Over capacity for DISK_GB on resource provider UUIDHEREPLZTAITOP2NODE. Needed: 8
 
 						</section>
 						<section>
+
+<h4>free part of VG is included in "total" & "max_unit" in DISK_GB in the resource in placement</h4>
+
+<pre>
+[root@realtbN ~]# lvs --units g
+  LV                                             VG           Attr       LSize    Pool          Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  home                                           vg1          -wi-ao----   10.00g                                                             
+  root                                           vg1          -wi-ao----   40.00g                                                             
+  swap                                           vg1          -wi-ao----    4.00g                                                             
+  tmp                                            vg1          -wi-ao----    4.00g                                                             
+  var                                            vg1          -wi-ao----   41.98g                                                             
+  b75ff332-b725-4904-8cab-UUID_disk      	 vg_instances Vwi-aotz--   80.00g instance_pool        10.09                                  
+  b75ff332-b725-4904-8cab-UUID_disk.eph0 	 vg_instances Vwi-aotz-- 3300.00g instance_pool        0.00                                   
+  instance_pool                                  vg_instances twi-aotz-- 3441.03g                      0.23   0.55                            
+[root@realtbN ~]# vgs --units g
+  VG           #PV #LV #SN Attr   VSize    VFree 
+  vg1            4   5   0 wz--n-   99.98g     0g
+  vg_instances   4   3   0 wz--n- 3476.00g 34.76g
+</pre>
+						</section>
+
+						<section>
 							<a href="https://bugs.launchpad.net/nova/+bug/1681658">violate inventory constraints</a> openstack bugfix won'tfix<br><br>
 							InvalidAllocationConstraintsViolated: Unable to create allocation for 'DISK_GB' on resource provider '0bb7777c-UUID-4616-8890-IO/TB/broadwell'. <b style=color:red>The requested amount would violate inventory constraints.</b>
 						</section>
