@@ -58,7 +58,7 @@ Press **→** one or more times to select topic.
 					<section>
 						<ul>
 							<li>Documentation: <a href="https://docs.openstack.org/placement/latest/">Latest docs</a> </li>
-							<li>List of changes: <a href="https://docs.openstack.org/nova/rocky/user/placement.html">Rocky Nova User Placement</a> </li>
+							<li>Great Read: List of changes: <a href="https://docs.openstack.org/nova/rocky/user/placement.html">Rocky Nova User Placement</a> </li>
 							<li>For newton: ??? </li>
 							<li>For ocata:
 							<a href="https://docs.openstack.org/ocata/install-guide-ubuntu/nova-controller-install.html">Deployment Guide</a> for Nova Ubuntu was useful (had example of endpoint) </li>
@@ -80,9 +80,9 @@ Press **→** one or more times to select topic.
 					</section>
 					<section>
 						In <b style=color:green>Newton: nova-scheduler </b></font> nova/scheduler/filter_scheduler.py does not contain 'placement'<br />
-						In <b style=color:green>Newton: nova-compute </b></font> talk to placement and update their resource providers there. <br />
-						In <b style=color:green>Ocata: nova-scheduler </b> will use old method until all nova-computes are ocata. <i>(Not anymore in Pike)</i><br/>
-						In <b style=color:green>Ocata: nova-compute </b> will not start without [placement]<br />
+					In <b style=color:green>Newton: nova-compute </b></font> talks to placement and resource provider, inventory and allocations<i>(tables in nova_api db)</i> <br />
+						In <b style=color:lightgreen>Ocata: nova-scheduler </b> will use old method until all nova-computes are ocata. <i>(no fallback in Pike)</i><br/>
+						In <b style=color:lightgreen>Ocata: nova-compute </b> will not start without [placement]<br />
 					</section>
 					<section>
 						ROCKY <br>
@@ -100,7 +100,7 @@ Press **→** one or more times to select topic.
 					</section>
 					<section>
 						<section>
-							<h4> openstack resource provider list</h4>
+							<h4 style=color:green>$ openstack resource provider list</h4>
 								placement requires admin credentials<br>
 								<code>
 						$ pip install osc-placement 
@@ -171,7 +171,7 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 						<section>
 							<br>
 							<h3>Pike 1/2</h3>
-							- Nova FilterScheduler now requests allocation candidates during scheduling.<br />
+							- <b style=color:green>Nova FilterScheduler now requests allocation candidates during scheduling.</b><br />
 							- <a href="https://docs.openstack.org/releasenotes/nova/pike.html">Some bugs fixed around live migration and evacuate to specific hosts</a><br />
 							- an allocation request is still made and if it fails migration/evacuate fails. <br />
 						|<br>
@@ -183,6 +183,7 @@ $ openstack resource provider inventory list a996fb27-UUID-45ee-b98c-oversubc64C
 							<h3>pike 2/2</h3>
 							- benefits when using multiple schedulers <br />
 							- traits are added<br />
+							 - <a href="https://github.com/openstack/os-traits">https://github.com/openstack/os-traits</a>
 						</section>
 						<section>
 							<br>
@@ -307,6 +308,41 @@ Over capacity for DISK_GB on resource provider UUIDHEREPLZTAITOP2NODE. Needed: 8
 						</section>
 						<section>
 							What should we do about these issues with the IO/TB/broadwell TB.3.480RAM?
+						</section>
+					</section>
+					<section>
+						<section>
+						<h4>FINally, what about memory_mb resource class?</h4>
+
+<pre>
+ openstack resource provider inventory show  f5da8e11-UUID-49a0-95ee-kajaani1 MEMORY_MB
++------------------+--------+
+| Field            | Value  |
++------------------+--------+
+| allocation_ratio | 1.0    |
+| max_unit         | 391877 |
+| reserved         | 512    |
+| step_size        | 1      |
+| min_unit         | 1      |
+| total            | 391877 |
++------------------+--------+
+
+$ free -m
+              total        used        free      shared  buff/cache   available
+Mem:         385427        3683      374371        1826        7372      378527
+Swap:         18383           0       18383
+$ free
+              total        used        free      shared  buff/cache   available
+Mem:      394677992     3770072   383357516     1870620     7550404   387613480
+Swap:      18825212           0    18825212
+
+</pre>
+						</section>
+						<section>
+						So it's either adding ~5GiB or it's removing 3GB?<br>
+						394677992 bytes == 394 677.992 megabytes according to google (--si, powers of 1000 not 1024)<br>
+						reserved_host_memory_mb=512<br>
+						resource tracker accounts for reserved_host_memory and also adds overhead ( starting with Pike )
 						</section>
 					</section>
 					<section>
