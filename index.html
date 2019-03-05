@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>Using OpenStack Keystone as an API catalogue</title>
+		<title>Cells V2 with Openstack Nova</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/black.css">
@@ -40,190 +40,53 @@ Press **→** one or more times to select topic.
 
 					</section>
 					<section data-background="topic_background.png" data-background-size="contain">
-						<br />Standalone Keystone <br /> For an API catalogue <br /> <font size="+2">2019 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
+						<br />Cells_v2 and Pouta<br />  <font size="+2">2019 <br /> Johan Guldmyr & CSC Pouta Cloud Team</font>
 					</section>
 					<section>
-						<h4>keystone is:</h4>
+						<h4>cells is:</h4>
 						<ul>
-							<li><a href="https://docs.openstack.org/keystone/latest/">https://docs.openstack.org/keystone/latest/</a></li>
-							<li>Keystone is an OpenStack service that provides API client authentication, service discovery, and distributed multi-tenant authorization by implementing OpenStack’s Identity API.</li>
-							<li>It can take username/password from an SQL, LDAP, OIDC, tokens, OTP, OAUTH and federated identities</li>
-							<li>SQL database, memcached<li>
+							<li><a href="https://docs.openstack.org/nova/rocky/user/cells.html">cells.html rocky</a> links to great videos and introduction</li>
+							<li><a href="https://docs.openstack.org/nova/rocky/user/cellsv2-layout.html">cellsv2-layout rocky</a> intro to multi-cell</li>
+							<li>cells v2 is much better than v1 (v2 has basic nova features, like flavors)<li>
 						</ul>
 					</section>
 					<section>
-						Next slides are how to install and configure a standalone keystone. config management could easily automate all of the next slides<br>
-						For example <a href="https://docs.ansible.com/ansible/latest/modules/os_keystone_service_module.html">https://docs.ansible.com/ansible/latest/modules/os_keystone_service_module.html</a><br>
-						ansible module "os_keystone_service" can be used to create services and there's another module for endpoints
-					</section>
-					<section>
-						<h4>Install keystone: </h4>
+						<h4>cool stuff</h4>
 						<ul>
-							<li> create CentOS-7 VM (tested in cPouta) </a>
-							<li><a href="https://docs.openstack.org/install-guide/environment-packages-rdo.html">https://docs.openstack.org/install-guide/environment-packages-rdo.html</a> install RDO</li>
-							<li>sudo yum install centos-release-openstack-rocky # current version of openstack</li>
-							<li><a href="https://docs.openstack.org/keystone/rocky/install/keystone-install-rdo.html">https://docs.openstack.org/keystone/rocky/install/keystone-install-rdo.html</a></li>
-							<li>sudo yum install openstack-keystone httpd mod_wsgi mariadb-server python-openstackclient</li>
+							<li>fewer nova computes in the same rabbit cluster as the neutron agents</li>
+							<li>no migrations across cells in rocky</li>
+							<li>multi-cell not really good until pike, maybe even later </li>
+							<li>nova newton simple_cell calls it api_cell_0, later it changes. So probably need to run the nova-manage commands specifically instead of the helper</li>
+							<li>can I run nova-manage db sync in Ocata without cells configured?</li>
 						</ul>
 					</section>
 					<section>
-						<h4> setup 1</h4>
+						<h4>things needed</h4>
 						<ul>
-							<li>systemctl start mariadb</li>
-							<li>create mysql db and users and grants </li>
-							<li> edit keystone.conf - fernet tokens and database connection= string</li>
-							<li>$ keystone-manage db sync # creates tables and schemas</li>
-							<li>$ setenforce 0 # because httpd</li>
-							<li> edit httpd.conf (ServerName)</li>
-							<li> symlink in keystone-wsgi config </li>
-							<li> systemctl start httpd</li>
+							<li>don't have to have another DB cluster</li>
+							<li>don't have to have another MQ (could do a vhost)</li>
+							<li>do need another conductor(in HA) that needs to run somewhere</li>
+							<li>cell0 and a cell1</li>
+							<li>what to call the future cells?</li>
+							<li>some puppet-nova code to work for existing and new systems</li>
 						</ul>
 					</section>
 					<section>
-						<h4> bootstrap keystone with IP of VM</h4>
-<pre>
-keystone-manage bootstrap --bootstrap-password ADMIN_PASS \
-  --bootstrap-admin-url http://192.168.1.21:5000/v3/ \
-  --bootstrap-internal-url http://192.168.1.21:5000/v3/ \
-  --bootstrap-public-url http://192.168.1.21:5000/v3/ \
-  --bootstrap-region-id RegionOne
-</pre>
+						<h4> workflow changes with single-cell</h4>
+						<ul>
+							<li>new computes = run a discovery or have scheduled discoveries</li>
+						</ul>
 					</section>
 					<section>
-						<h4>create an openrc file or</h4>
-						<pre>
-$ export OS_USERNAME=admin
-$ export OS_PASSWORD=ADMIN_PASS
-$ export OS_PROJECT_NAME=admin
-$ export OS_USER_DOMAIN_NAME=Default
-$ export OS_PROJECT_DOMAIN_NAME=Default
-$ export OS_AUTH_URL=http://192.168.1.21:5000/v3
-$ export OS_IDENTITY_API_VERSION=3
-</pre>
+						<h4>workflow changes with multi-cell</h4>
 
+							<ul>
+							<li> one could setup a new cell , create a temporary nova-api in front of it, test it and after that add it to production</li>
+							<li> ?? </li>
+							</ul>
 					</section>
 					<section>
-						<h4> the fun begins!</h4>
-
-<pre>
-$ pip install python-openstackclient # we need some clients and libraries
-$ pip install python2-keystoneclient # also python3
-$ openstack service list
-+----------------------------------+----------+----------+
-| ID                               | Name     | Type     |
-+----------------------------------+----------+----------+
-| 15028268ccaf4b31bcf050327434b8e3 | keystone | identity |
-+----------------------------------+----------+----------+
-</pre>
-
-					</section>
-					<section>
-<pre>
-$ openstack service create --name SERVICE_NAME --description SERVICE_DESCRIPTION SERVICE_TYPE
-+-------------+----------------------------------+
-| Field       | Value                            |
-+-------------+----------------------------------+
-| description | SERVICE_DESCRIPTION              |
-| enabled     | True                             |
-| id          | 1d6871af4e794670b60440c012da15b6 |
-| name        | SERVICE_NAME                     |
-| type        | SERVICE_TYPE                     |
-+-------------+----------------------------------+
-</pre>
-					</section>
-					<section>
-<pre>
-$ openstack service list
-+----------------------------------+--------------+--------------+
-| ID                               | Name         | Type         |
-+----------------------------------+--------------+--------------+
-| 15028268ccaf4b31bcf050327434b8e3 | keystone     | identity     |
-| 1d6871af4e794670b60440c012da15b6 | SERVICE_NAME | SERVICE_TYPE |
-+----------------------------------+--------------+--------------+
-</pre>
-					</section>	
-					<section>
-<pre>
- openstack endpoint create SERVICE_NAME public http://myotherapi.example.org:5000/v3
-+--------------+----------------------------------+
-| Field        | Value                            |
-+--------------+----------------------------------+
-| enabled      | True                             |
-| id           | 0422ca9ef3874f479cd01736d7769dc0 |
-| interface    | public                           |
-| region       | None                             |
-| region_id    | None                             |
-| service_id   | 1d6871af4e794670b60440c012da15b6 |
-| service_name | SERVICE_NAME                     |
-| service_type | SERVICE_TYPE                     |
-| url          | http://myotherapi.example.org:5000/v3 |
-+--------------+----------------------------------+
-</pre>
-					</section>	
-					<section>
-<pre>
-$ openstack endpoint list
-+----------------------------------+-----------+--------------+--------------+---------+-----------+----------------------------------+
-| ID                               | Region    | Service Name | Service Type | Enabled | Interface | URL                              |
-+----------------------------------+-----------+--------------+--------------+---------+-----------+----------------------------------+
-| 0422ca9ef3874f479cd01736d7769dc0 | None      | SERVICE_NAME | SERVICE_TYPE | True    | public    | http://myotherapi.csc.fi:5000/v3 |
-| 0c4a4592a708497c8460adb249f3f21a | RegionOne | keystone     | identity     | True    | public    | http://192.168.1.21:5000/v3/     |
-| c7bcae6f953f4dab8bd0b6f2e7aa6f16 | RegionOne | keystone     | identity     | True    | admin     | http://192.168.1.21:5000/v3/     |
-| e7d35cf3e7e7465d9f154dfcb057967a | RegionOne | keystone     | identity     | True    | internal  | http://192.168.1.21:5000/v3/     |
-+----------------------------------+-----------+--------------+--------------+---------+-----------+----------------------------------+
-</pre>
-					</section>	
-					<section>
-						<h4>needs a client (python-openstack) to create tokens</h4>
-						You could of course also re-create this with your own code :)<br>
-<ul>
-<li> get a token using the username/password created above</li>
-<li> get the endpoint (& microversionto the keystone service</li>
-<li> list endpoints & services </li>
-</ul>
-<pre>
-$ openstack endpoint list --debug 2>&1|grep REQ
-REQ: curl -g -i -X GET http://192.168.1.21:5000/v3 -H "Accept: application/json" -H "User-Agent: openstacksdk/0.17.2 keystoneauth1/3.10.0 python-requests/2.19.1 CPython/2.7.5"
-REQ: curl -g -i -X GET http://192.168.1.21:5000/v3/endpoints? -H "Accept: application/json" -H "User-Agent: python-keystoneclient" -H "X-Auth-Token: {SHA1}MYTOKEN"
-REQ: curl -g -i -X GET http://192.168.1.21:5000/v3/services? -H "Accept: application/json" -H "User-Agent: python-keystoneclient" -H "X-Auth-Token: {SHA1}MYTOKEN"
-</pre>
-					</section>
-<section>
-request:
-<pre>
-curl -g -i -X GET http://192.168.1.21:5000/v3 -H "Accept: application/json" -H "User-Agent: openstacksdk/0.17.2 keystoneauth1/3.10.0 python-requests/2.19.1 CPython/2.7.5"
-</pre>
-response body:
-<pre>
-<code  data-trim data-noescape>
-{
-   "version":{
-      "status":"stable",
-      "updated":"2018-10-15T00:00:00Z",
-      "media-types":[
-         {
-            "base":"application/json",
-            "type":"application/vnd.openstack.identity-v3+json"
-         }
-      ],
-      "id":"v3.11",
-      "links":[
-         {
-            "href":"http://192.168.1.21:5000/v3/",
-            "rel":"self"
-         }
-      ]
-   }
-}
-</code>
-</pre>
-</section>
-<section data-background="1.png" data-background-size="contain">
-</section>
-<section data-background="3.png" data-background-size="contain">
-</section>
-					<section>
-FIN
+						FIN
 					</section>	
 			</div>
 		</div>
